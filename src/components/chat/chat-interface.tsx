@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -37,12 +38,14 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
+      // The function now returns the stringified JSON response
       const aiResponseContent = await sendMessageToTripGuide(trimmedInput);
       const aiMessage: Message = { role: 'ai', content: aiResponseContent };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Failed to get response from AI:", error);
-      const errorMessage: Message = { role: 'ai', content: 'Sorry, something went wrong. Please try again.' };
+      const errorMessageContent = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage: Message = { role: 'ai', content: JSON.stringify({ error: 'Sorry, something went wrong.', details: errorMessageContent }, null, 2) };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -69,7 +72,7 @@ export function ChatInterface() {
               )}
             >
               {message.role === 'ai' && (
-                <Avatar className="w-8 h-8 border">
+                <Avatar className="w-8 h-8 border shrink-0">
                   {/* Placeholder image for AI */}
                   <AvatarImage src="https://picsum.photos/32/32?grayscale" alt="AI Avatar" data-ai-hint="robot bot" />
                   <AvatarFallback>
@@ -79,19 +82,22 @@ export function ChatInterface() {
               )}
               <div
                 className={cn(
-                  'p-3 rounded-lg max-w-[75%]',
+                  'p-3 rounded-lg max-w-[75%] overflow-x-auto', // Added overflow-x-auto
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    // Soft blue equivalent using Tailwind/Shadcn themeing is tricky without overriding.
-                    // Using secondary for AI responses as a neutral alternative.
                     : 'bg-secondary text-secondary-foreground rounded-bl-none'
                 )}
                 aria-label={message.role === 'user' ? `Your message: ${message.content}` : `AI response: ${message.content}`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.role === 'ai' ? (
+                  // Use <pre> for AI responses to preserve JSON formatting
+                  <pre className="text-sm whitespace-pre-wrap font-mono">{message.content}</pre>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                )}
               </div>
                {message.role === 'user' && (
-                <Avatar className="w-8 h-8 border">
+                <Avatar className="w-8 h-8 border shrink-0">
                   {/* Placeholder image for User */}
                    <AvatarImage src="https://picsum.photos/32/32" alt="User Avatar" data-ai-hint="person user" />
                   <AvatarFallback>
@@ -145,3 +151,4 @@ export function ChatInterface() {
     </div>
   );
 }
+
