@@ -58,7 +58,7 @@ export function ChatInterface() {
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <header className="p-4 border-b bg-card shadow-sm">
-        <h1 className="text-xl font-semibold text-center text-foreground">TripGenius</h1>
+        <h1 className="text-xl font-semibold text-center text-foreground">TripBudy</h1> {/* Updated Header */}
         <p className="text-sm text-muted-foreground text-center">Your AI-powered travel planning assistant</p>
       </header>
 
@@ -128,7 +128,7 @@ export function ChatInterface() {
         <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-3xl mx-auto">
           <Input
             type="text"
-            placeholder="Ask TripGenius to plan your trip..."
+            placeholder="Ask TripBudy to plan your trip..." // Updated Placeholder
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className="flex-1 rounded-full px-4 py-2 shadow-inner" // Rounded input with shadow

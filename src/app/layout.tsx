@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TripGenius', // Updated Title
+  title: 'TripBudy', // Updated Title
   description: 'Your AI-powered travel planning assistant.', // Updated Description
 };
 
