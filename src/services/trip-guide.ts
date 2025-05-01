@@ -1,4 +1,6 @@
 
+'use server';
+
 /**
  * Represents a message in the conversation with the Trip Guide AI.
  */
@@ -17,10 +19,12 @@ const TRIP_GUIDE_WEBHOOK_URL = 'https://flowsy.app.n8n.cloud/webhook-test/Trip_G
 
 
 /**
- * Asynchronously sends a message to the Trip Guide webhook and returns the raw response text.
+ * Asynchronously sends a message to the Trip Guide webhook.
+ * Attempts to parse the response as JSON and extract `body.message`.
+ * If parsing fails or the structure is incorrect, it returns the raw response text.
  *
  * @param message The message to send to the Trip Guide.
- * @returns A promise that resolves to the raw AI's response message string.
+ * @returns A promise that resolves to the AI's response message string (either extracted or raw).
  * @throws Will throw an error if the network request fails or the server returns a non-OK status.
  */
 export async function sendMessageToTripGuide(message: string): Promise<string> {
@@ -35,7 +39,6 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
     });
   } catch (networkError) {
       console.error('Network error sending message to Trip Guide:', networkError);
-      // Throw an error for network issues, to be caught by the component
       if (networkError instanceof Error) {
           throw new Error(`Network error: ${networkError.message}`);
       } else {
@@ -51,18 +54,15 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
         console.error('Failed to read error response body:', readError);
     }
     console.error('Webhook Error Response:', `Status: ${response.status}`, errorBody);
-    // Throw an error for bad status codes, to be caught by the component
-    throw new Error(`Webhook request failed with status ${response.status}: ${response.statusText}`);
+    throw new Error(`Webhook request failed with status ${response.status}: ${response.statusText}. Body: ${errorBody}`);
   }
 
-  // Get the raw response body as text
   let responseText: string;
   try {
       responseText = await response.text();
       console.log('Raw webhook response received:', responseText); // Log the raw response
   } catch (readError) {
       console.error('Error reading response text:', readError);
-      // Throw an error if reading the response fails
       if (readError instanceof Error) {
           throw new Error(`Error reading response: ${readError.message}`);
       } else {
@@ -70,7 +70,21 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
       }
   }
 
-  // Return the raw text directly, representing the JSON as a string.
-  return responseText;
-}
+  // Attempt to parse as JSON and extract the message
+  try {
+    const responseData = JSON.parse(responseText);
 
+    // Check if the parsed data has the expected structure
+    if (responseData?.body?.message && typeof responseData.body.message === 'string') {
+      console.log('Successfully extracted message from JSON:', responseData.body.message);
+      return responseData.body.message; // Return the extracted message
+    } else {
+      console.warn('Webhook response JSON did not contain "body.message" string. Returning raw text.', responseData);
+      return responseText; // Return raw text if structure is wrong
+    }
+  } catch (parseError) {
+    // If parsing fails, it's likely not JSON or malformed JSON.
+    console.warn('Webhook response was not valid JSON. Returning raw text.', parseError);
+    return responseText; // Return the raw text as a fallback
+  }
+}
