@@ -70,6 +70,7 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
       }
   }
 
-  // Return the raw text directly
+  // Return the raw text directly, representing the JSON as a string.
   return responseText;
 }
+
