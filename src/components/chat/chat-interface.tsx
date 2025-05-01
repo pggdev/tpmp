@@ -38,15 +38,14 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // The function now returns the extracted message string or specific error strings,
-      // or throws an error for critical failures.
+      // The function now returns the cleaned message string or throws an error.
       const aiResponseContent = await sendMessageToTripGuide(trimmedInput);
       const aiMessage: Message = { role: 'ai', content: aiResponseContent };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      // This block now catches only critical errors thrown by sendMessageToTripGuide
+      // This block catches errors thrown by sendMessageToTripGuide
       console.error("Failed to get response from AI:", error);
-      // Display a user-friendly error message in the chat based on the thrown error
+      // Display a user-friendly error message in the chat
       const errorMessageContent = error instanceof Error ? error.message : 'An unknown error occurred.';
       const errorMessage: Message = { role: 'ai', content: `Sorry, I encountered an error: ${errorMessageContent}` };
       setMessages((prev) => [...prev, errorMessage]);
@@ -88,13 +87,12 @@ export function ChatInterface() {
                   'p-3 rounded-lg max-w-[75%] overflow-x-auto shadow-sm', // Added shadow-sm
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    // Use a soft blue for AI responses as per style guidelines
-                    : 'bg-blue-100 dark:bg-blue-900 text-gray-900 dark:text-gray-100 rounded-bl-none'
-                     // Explicitly set AI background/foreground colors
-                     // Adjusted based on feedback to use soft blue.
+                    // Use theme's secondary colors for AI messages for consistency
+                    : 'bg-secondary text-secondary-foreground rounded-bl-none'
                 )}
                 aria-label={message.role === 'user' ? `Your message: ${message.content}` : `AI response: ${message.content}`}
               >
+                {/* Use whitespace-pre-wrap to respect newlines from the cleaned response */}
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
                {message.role === 'user' && (
@@ -117,7 +115,7 @@ export function ChatInterface() {
                   <Bot className="w-4 h-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-gray-900 dark:text-gray-100 rounded-bl-none shadow-sm">
+              <div className="p-3 rounded-lg bg-secondary text-secondary-foreground rounded-bl-none shadow-sm">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             </div>
