@@ -38,15 +38,17 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // The function now returns the extracted message string
+      // The function now returns the extracted message string or specific error strings,
+      // or throws an error for critical failures.
       const aiResponseContent = await sendMessageToTripGuide(trimmedInput);
       const aiMessage: Message = { role: 'ai', content: aiResponseContent };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
+      // This block now catches only critical errors thrown by sendMessageToTripGuide
       console.error("Failed to get response from AI:", error);
-      const errorMessageContent = error instanceof Error ? error.message : 'Unknown error';
-      // Display a user-friendly error message in the chat
-      const errorMessage: Message = { role: 'ai', content: `Sorry, something went wrong. Details: ${errorMessageContent}` };
+      // Display a user-friendly error message in the chat based on the thrown error
+      const errorMessageContent = error instanceof Error ? error.message : 'An unknown error occurred.';
+      const errorMessage: Message = { role: 'ai', content: `Sorry, I encountered an error: ${errorMessageContent}` };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -83,14 +85,16 @@ export function ChatInterface() {
               )}
               <div
                 className={cn(
-                  'p-3 rounded-lg max-w-[75%] overflow-x-auto', // Added overflow-x-auto
+                  'p-3 rounded-lg max-w-[75%] overflow-x-auto shadow-sm', // Added shadow-sm
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                    // Use a soft blue for AI responses as per style guidelines
+                    : 'bg-blue-100 dark:bg-blue-900 text-gray-900 dark:text-gray-100 rounded-bl-none'
+                     // Explicitly set AI background/foreground colors
+                     // Adjusted based on feedback to use soft blue.
                 )}
                 aria-label={message.role === 'user' ? `Your message: ${message.content}` : `AI response: ${message.content}`}
               >
-                {/* Use <p> for both user and AI messages now */}
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
                {message.role === 'user' && (
@@ -107,11 +111,13 @@ export function ChatInterface() {
            {isLoading && (
             <div className="flex justify-start items-center gap-3">
               <Avatar className="w-8 h-8 border">
+                 {/* Placeholder image for AI loading */}
+                <AvatarImage src="https://picsum.photos/32/32?grayscale" alt="AI Avatar" data-ai-hint="robot bot loading" />
                 <AvatarFallback>
                   <Bot className="w-4 h-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="p-3 rounded-lg bg-secondary text-secondary-foreground rounded-bl-none">
+              <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-gray-900 dark:text-gray-100 rounded-bl-none shadow-sm">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             </div>
@@ -127,7 +133,7 @@ export function ChatInterface() {
             placeholder="Ask TripGenius to plan your trip..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1"
+            className="flex-1 rounded-full px-4 py-2 shadow-inner" // Rounded input with shadow
             aria-label="Chat input"
             disabled={isLoading}
           />
@@ -136,6 +142,7 @@ export function ChatInterface() {
             size="icon"
             disabled={isLoading || !inputValue.trim()}
             aria-label="Send message"
+            className="rounded-full bg-accent hover:bg-accent/90" // Teal button
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -148,4 +155,3 @@ export function ChatInterface() {
     </div>
   );
 }
-
