@@ -38,14 +38,15 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // The function now returns the stringified JSON response
+      // The function now returns the extracted message string
       const aiResponseContent = await sendMessageToTripGuide(trimmedInput);
       const aiMessage: Message = { role: 'ai', content: aiResponseContent };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Failed to get response from AI:", error);
       const errorMessageContent = error instanceof Error ? error.message : 'Unknown error';
-      const errorMessage: Message = { role: 'ai', content: JSON.stringify({ error: 'Sorry, something went wrong.', details: errorMessageContent }, null, 2) };
+      // Display a user-friendly error message in the chat
+      const errorMessage: Message = { role: 'ai', content: `Sorry, something went wrong. Details: ${errorMessageContent}` };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -89,12 +90,8 @@ export function ChatInterface() {
                 )}
                 aria-label={message.role === 'user' ? `Your message: ${message.content}` : `AI response: ${message.content}`}
               >
-                {message.role === 'ai' ? (
-                  // Use <pre> for AI responses to preserve JSON formatting
-                  <pre className="text-sm whitespace-pre-wrap font-mono">{message.content}</pre>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                )}
+                {/* Use <p> for both user and AI messages now */}
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
                {message.role === 'user' && (
                 <Avatar className="w-8 h-8 border shrink-0">

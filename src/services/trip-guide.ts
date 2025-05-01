@@ -1,3 +1,4 @@
+
 /**
  * Represents a message in the conversation with the Trip Guide AI.
  */
@@ -15,11 +16,11 @@ export interface Message {
 const TRIP_GUIDE_WEBHOOK_URL = 'https://flowsy.app.n8n.cloud/webhook-test/Trip_Guide';
 
 /**
- * Asynchronously sends a message to the Trip Guide webhook and retrieves the full JSON response as a string.
+ * Asynchronously sends a message to the Trip Guide webhook and retrieves the 'message' field from the JSON response.
  *
  * @param message The message to send to the Trip Guide.
- * @returns A promise that resolves to the AI's full JSON response, stringified.
- * @throws Will throw an error if the network request fails or the response is not ok.
+ * @returns A promise that resolves to the AI's response message string.
+ * @throws Will throw an error if the network request fails, the response is not ok, the response is not valid JSON, or the JSON does not contain a 'message' field.
  */
 export async function sendMessageToTripGuide(message: string): Promise<string> {
   try {
@@ -37,24 +38,35 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
       throw new Error(`Webhook request failed with status ${response.status}: ${response.statusText}`);
     }
 
-    // Get the raw response body as text first to handle potential non-JSON responses gracefully
+    // Get the raw response body as text first
     const responseText = await response.text();
 
     try {
-        // Attempt to parse as JSON to format it nicely
-        const responseData = JSON.parse(responseText);
-        // Return the pretty-printed JSON string
-        return JSON.stringify(responseData, null, 2); // Indent with 2 spaces for readability
+      // Attempt to parse as JSON
+      const responseData = JSON.parse(responseText);
+
+      // Check if the parsed data has a 'message' field and it's a string
+      if (typeof responseData.message === 'string') {
+        return responseData.message; // Return only the message content
+      } else {
+        console.warn('Webhook response JSON does not contain a valid "message" field:', responseData);
+        // Return a user-friendly message indicating the structure issue
+        return "Sorry, I received an unexpected response format from the Trip Guide.";
+      }
     } catch (parseError) {
-        // If parsing fails, it might not be JSON. Return the raw text.
-        console.warn('Webhook response was not valid JSON, returning raw text:', parseError);
-        return responseText;
+      // If parsing fails, it might not be JSON.
+      console.warn('Webhook response was not valid JSON, returning raw text:', parseError);
+      // Return the raw text as a fallback, or a generic error message
+      return `Sorry, I received an unreadable response: ${responseText}`;
     }
 
   } catch (error) {
     console.error('Error sending message to Trip Guide:', error);
-    // Provide a user-friendly error message
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    return JSON.stringify({ error: "Sorry, I encountered an error trying to reach the Trip Guide. Please try again later.", details: errorMessage }, null, 2);
+    // Rethrow the error to be caught by the calling component
+    if (error instanceof Error) {
+      throw new Error(`Failed to get response from Trip Guide: ${error.message}`);
+    } else {
+      throw new Error('An unknown error occurred while contacting the Trip Guide.');
+    }
   }
 }
