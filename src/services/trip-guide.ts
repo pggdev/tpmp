@@ -16,11 +16,11 @@ export interface Message {
 const TRIP_GUIDE_WEBHOOK_URL = 'https://flowsy.app.n8n.cloud/webhook-test/Trip_Guide';
 
 /**
- * Asynchronously sends a message to the Trip Guide webhook and retrieves the 'message' field from the JSON response.
+ * Asynchronously sends a message to the Trip Guide webhook and retrieves the 'message' field from the nested 'body' object in the JSON response.
  *
  * @param message The message to send to the Trip Guide.
  * @returns A promise that resolves to the AI's response message string.
- * @throws Will throw an error if the network request fails, the response is not ok, the response is not valid JSON, or the JSON does not contain a 'message' field.
+ * @throws Will throw an error if the network request fails, the response is not ok, the response is not valid JSON, or the JSON does not contain a 'body.message' field.
  */
 export async function sendMessageToTripGuide(message: string): Promise<string> {
   try {
@@ -45,11 +45,11 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
       // Attempt to parse as JSON
       const responseData = JSON.parse(responseText);
 
-      // Check if the parsed data has a 'message' field and it's a string
-      if (typeof responseData.message === 'string') {
-        return responseData.message; // Return only the message content
+      // Check if the parsed data has a 'body' object and a 'message' field inside it
+      if (responseData && typeof responseData.body === 'object' && responseData.body !== null && typeof responseData.body.message === 'string') {
+        return responseData.body.message; // Return only the message content
       } else {
-        console.warn('Webhook response JSON does not contain a valid "message" field:', responseData);
+        console.warn('Webhook response JSON does not contain a valid "body.message" field:', responseData);
         // Return a user-friendly message indicating the structure issue
         return "Sorry, I received an unexpected response format from the Trip Guide.";
       }
