@@ -45,7 +45,7 @@ export function ChatInterface() {
     } catch (error) {
       // This block catches errors thrown by sendMessageToTripGuide
       console.error("Failed to get response from AI:", error);
-      // Display a user-friendly error message in the chat
+      // Display a user-friendly error message in the chat, using the error message from the service
       const errorMessageContent = error instanceof Error ? error.message : 'An unknown error occurred.';
       const errorMessage: Message = { role: 'ai', content: `Sorry, I encountered an error: ${errorMessageContent}` };
       setMessages((prev) => [...prev, errorMessage]);

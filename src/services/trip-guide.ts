@@ -32,13 +32,14 @@ function cleanResponseMessage(rawMessage: string): string {
     if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0] !== null && typeof parsed[0].output === 'string') {
       cleanedMessage = parsed[0].output;
     }
+    // If it parses but doesn't match the above, it might be the {"body":{"message": "..."}} structure itself or something else.
+    // We'll rely on later checks or the fact that `messageToClean` would be updated if `body.message` was found.
   } catch (e) {
-    // If parsing fails, assume it's not in the '[{"output":...}]' format
-    // and proceed with the raw message.
-    // console.warn("Response was not in the expected JSON array format:", e);
+    // If parsing fails, assume it's not JSON or not the '[{"output":...}]' format.
+    // Proceed with the current value of cleanedMessage (which is the raw input).
   }
 
-  // Replace escaped newlines with actual newlines
+  // Replace escaped newlines with actual newlines AFTER potential JSON extraction
   // Use a regular expression to replace all occurrences of '\\n'
   cleanedMessage = cleanedMessage.replace(/\\n/g, '\n');
 
@@ -47,8 +48,9 @@ function cleanResponseMessage(rawMessage: string): string {
 
 
 /**
- * Asynchronously sends a message to the Trip Guide webhook and retrieves the 'message' field from the nested 'body' object in the JSON response.
- * The response message is cleaned and formatted before being returned.
+ * Asynchronously sends a message to the Trip Guide webhook, attempts to extract the message
+ * from `body.message` in the JSON response, falls back to using the raw response text,
+ * cleans the result, and returns it.
  *
  * @param message The message to send to the Trip Guide.
  * @returns A promise that resolves to the cleaned and formatted AI's response message string.
@@ -81,7 +83,7 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
     } catch (readError) {
         console.error('Failed to read error response body:', readError);
     }
-    console.error('Webhook Error Response:', errorBody);
+    console.error('Webhook Error Response:', `Status: ${response.status}`, errorBody);
     // Throw an error for bad status codes, to be caught by the component
     throw new Error(`Webhook request failed with status ${response.status}: ${response.statusText}`);
   }
@@ -100,30 +102,35 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
       }
   }
 
+  let messageToClean: string = responseText; // Default to using the raw text
 
   try {
-    // Attempt to parse as JSON
+    // Attempt to parse the raw text as JSON
     const responseData = JSON.parse(responseText);
 
-    // Check if the parsed data has a 'body' object and a 'message' field inside it (specifically check type)
-    if (responseData && typeof responseData === 'object' && responseData.body && typeof responseData.body === 'object' && typeof responseData.body.message === 'string') {
-      // Clean the extracted message before returning
-      return cleanResponseMessage(responseData.body.message);
+    // Check if the parsed data has the expected structure: { body: { message: "string" } }
+    if (responseData?.body?.message && typeof responseData.body.message === 'string') {
+      messageToClean = responseData.body.message; // Use the message from JSON
+      console.log('Extracted message from responseData.body.message');
     } else {
-      console.warn('Webhook response JSON does not contain a valid "body.message" string field:', responseData);
-      // Return a user-friendly message indicating the structure issue (treated as AI response)
-      return "Sorry, I received an unexpected response format from the Trip Guide.";
+      // It parsed as JSON, but didn't have the expected structure. Log it and use raw text.
+      console.warn('Webhook response was JSON, but "body.message" string not found or invalid. Using raw text.', responseData);
     }
   } catch (parseError) {
-    // If parsing fails, it might not be JSON, but could still be the raw string we need to clean.
-    console.warn('Webhook response was not valid JSON, attempting to clean raw text:', parseError, `Raw text: "${responseText}"`);
-     // Try cleaning the raw text directly as a fallback
-     const cleanedFallback = cleanResponseMessage(responseText);
-     // Avoid returning the raw JSON wrapper if cleaning failed to remove it
-     if (cleanedFallback.startsWith('[{"output":')) {
-         return `Sorry, I received an unreadable response.`;
-     }
-    return cleanedFallback;
+    // JSON parsing failed. It's likely plain text or maybe the [{"output":...}] format.
+    // Keep messageToClean as the raw responseText and let cleanResponseMessage handle it.
+    console.warn('Webhook response was not valid JSON. Processing as raw text.', parseError);
   }
-}
 
+  // Clean the determined message string (either from JSON or raw text fallback)
+  const finalMessage = cleanResponseMessage(messageToClean);
+
+  // Final check to prevent returning raw JSON structure if cleaning somehow failed
+   if (finalMessage.startsWith('[{"output":') || finalMessage.startsWith('{"body":')) {
+       console.error("Cleaning failed to remove JSON structure. Returning error message.");
+       // Throw an error instead of returning a confusing message in chat
+       throw new Error("Received an unreadable response structure from the Trip Guide.");
+   }
+
+  return finalMessage;
+}
