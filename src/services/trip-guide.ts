@@ -15,7 +15,7 @@ export interface Message {
   content: string;
 }
 
-const TRIP_GUIDE_WEBHOOK_URL = 'https://flowsy.app.n8n.cloud/webhook-test/Trip_Guide';
+const TRIP_GUIDE_WEBHOOK_URL = 'https://autom811.app.n8n.cloud/webhook-test/1559320f-ec10-455b-a1aa-68591ea3527b';
 
 
 /**
