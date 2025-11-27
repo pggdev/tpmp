@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster
@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TripBudy', // Updated Title
-  description: 'Your AI-powered travel planning assistant.', // Updated Description
+  title: 'CareerPilot',
+  description: 'Your AI companion for smart career decisions.',
 };
 
 export default function RootLayout({

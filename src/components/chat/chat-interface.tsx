@@ -17,7 +17,7 @@ export function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages update
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -38,14 +38,14 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // The function now returns the cleaned message string or throws an error.
+
       const aiResponseContent = await sendMessageToTripGuide(trimmedInput);
       const aiMessage: Message = { role: 'ai', content: aiResponseContent };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      // This block catches errors thrown by sendMessageToTripGuide
+
       console.error("Failed to get response from AI:", error);
-      // Display a user-friendly error message in the chat, using the error message from the service
+
       const errorMessageContent = error instanceof Error ? error.message : 'An unknown error occurred.';
       const errorMessage: Message = { role: 'ai', content: `Sorry, I encountered an error: ${errorMessageContent}` };
       setMessages((prev) => [...prev, errorMessage]);
@@ -58,8 +58,8 @@ export function ChatInterface() {
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <header className="p-4 border-b bg-card shadow-sm">
-        <h1 className="text-xl font-semibold text-center text-foreground">TripBudy</h1> {/* Updated Header */}
-        <p className="text-sm text-muted-foreground text-center">Your AI-powered travel planning assistant</p>
+        <h1 className="text-xl font-semibold text-center text-foreground">CareerPilot</h1> {/* Updated Header */}
+        <p className="text-sm text-muted-foreground text-center">Your AI companion for smart career decisions.</p>
       </header>
 
       {/* Chat Area */}
@@ -84,32 +84,32 @@ export function ChatInterface() {
               )}
               <div
                 className={cn(
-                  'p-3 rounded-lg max-w-[75%] overflow-x-auto shadow-sm', // Added shadow-sm
+                  'p-3 rounded-lg max-w-[75%] overflow-x-auto shadow-sm',
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    // Use theme's secondary colors for AI messages for consistency
+
                     : 'bg-secondary text-secondary-foreground rounded-bl-none'
                 )}
                 aria-label={message.role === 'user' ? `Your message: ${message.content}` : `AI response: ${message.content}`}
               >
-                {/* Use whitespace-pre-wrap to respect newlines from the cleaned response */}
+
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
-               {message.role === 'user' && (
+              {message.role === 'user' && (
                 <Avatar className="w-8 h-8 border shrink-0">
                   {/* Placeholder image for User */}
-                   <AvatarImage src="https://picsum.photos/32/32" alt="User Avatar" data-ai-hint="person user" />
+                  <AvatarImage src="https://picsum.photos/32/32" alt="User Avatar" data-ai-hint="person user" />
                   <AvatarFallback>
                     <User className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
-               )}
+              )}
             </div>
           ))}
-           {isLoading && (
+          {isLoading && (
             <div className="flex justify-start items-center gap-3">
               <Avatar className="w-8 h-8 border">
-                 {/* Placeholder image for AI loading */}
+                {/* Placeholder image for AI loading */}
                 <AvatarImage src="https://picsum.photos/32/32?grayscale" alt="AI Avatar" data-ai-hint="robot bot loading" />
                 <AvatarFallback>
                   <Bot className="w-4 h-4" />
@@ -128,10 +128,10 @@ export function ChatInterface() {
         <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-3xl mx-auto">
           <Input
             type="text"
-            placeholder="Ask TripBudy to plan your trip..." // Updated Placeholder
+            placeholder="Ask CareerPilot to plan your career, skills, resume .... "
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 rounded-full px-4 py-2 shadow-inner" // Rounded input with shadow
+            className="flex-1 rounded-full px-4 py-2 shadow-inner"
             aria-label="Chat input"
             disabled={isLoading}
           />
@@ -140,7 +140,7 @@ export function ChatInterface() {
             size="icon"
             disabled={isLoading || !inputValue.trim()}
             aria-label="Send message"
-            className="rounded-full bg-accent hover:bg-accent/90" // Teal button
+            className="rounded-full bg-accent hover:bg-accent/90"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
