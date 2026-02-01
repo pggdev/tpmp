@@ -9,7 +9,7 @@ export interface Message {
   content: string;
 }
 
-const TRIP_GUIDE_WEBHOOK_URL = 'https://major-project.app.n8n.cloud/webhook-test/df09f935-64f6-479f-9ff4-dae515107091';
+const CAREER_GUIDE_WEBHOOK_URL = 'https://mp1.app.n8n.cloud/webhook-test/449d2f95-5aab-4775-9992-f659af7197b6';
 
 
 
@@ -17,12 +17,12 @@ const TRIP_GUIDE_WEBHOOK_URL = 'https://major-project.app.n8n.cloud/webhook-test
 export async function sendMessageToTripGuide(message: string): Promise<string> {
   let response: Response;
   try {
-    response = await fetch(TRIP_GUIDE_WEBHOOK_URL, {
+    response = await fetch(CAREER_GUIDE_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message }), // Send message in the expected format
+      body: JSON.stringify({ message }),
     });
   } catch (networkError) {
     console.error('Network error sending message to Trip Guide:', networkError);
@@ -57,21 +57,21 @@ export async function sendMessageToTripGuide(message: string): Promise<string> {
     }
   }
 
-  // Attempt to parse as JSON and extract the message
+
   try {
     const responseData = JSON.parse(responseText);
 
-    // Check if the parsed data has the expected structure
+
     if (responseData?.body?.message && typeof responseData.body.message === 'string') {
       console.log('Successfully extracted message from JSON:', responseData.body.message);
-      return responseData.body.message; // Return the extracted message
+      return responseData.body.message;
     } else {
       console.warn('Webhook response JSON did not contain "body.message" string. Returning raw text.', responseData);
-      return responseText; // Return raw text if structure is wrong
+      return responseText;
     }
   } catch (parseError) {
-    // If parsing fails, it's likely not JSON or malformed JSON.
+
     console.warn('Webhook response was not valid JSON. Returning raw text.', parseError);
-    return responseText; // Return the raw text as a fallback
+    return responseText;
   }
 }

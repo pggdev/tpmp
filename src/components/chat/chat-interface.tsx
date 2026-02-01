@@ -2,8 +2,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import type { Message } from '@/services/trip-guide';
-import { sendMessageToTripGuide } from '@/services/trip-guide';
+import type { Message } from '@/services/career-guide';
+import { sendMessageToTripGuide } from '@/services/career-guide';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
