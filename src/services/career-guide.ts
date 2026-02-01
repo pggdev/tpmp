@@ -9,7 +9,7 @@ export interface Message {
   content: string;
 }
 
-const CAREER_GUIDE_WEBHOOK_URL = 'https://mp1.app.n8n.cloud/webhook-test/449d2f95-5aab-4775-9992-f659af7197b6';
+const CAREER_GUIDE_WEBHOOK_URL = 'https://mp1.app.n8n.cloud/webhook/449d2f95-5aab-4775-9992-f659af7197b6';
 
 
 
